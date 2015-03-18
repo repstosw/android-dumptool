@@ -47,7 +47,7 @@ def get_map(pid):
 
 def dump_to_file(pid, start, end, file="memdump"):
     """
-    Dump a memory range of a PID to a file, using the dump_range executable on the device
+    Dump a memory range of a PID to a file, using the dumptool executable on the device
 
     Pulls the dumpfile to the local machine
 
