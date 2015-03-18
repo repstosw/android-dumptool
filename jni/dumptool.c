@@ -69,7 +69,6 @@ int main(int argc, char **argv) {
         fclose(out);
     }
     else if (strcmp(argv[4], "-s") == 0) {
-        printf("Searching for string: %s\n", argv[5]);
 
         char *searchstring = malloc(strlen(argv[5]) * 2);
         int length = ascii_to_utf16(argv[5], searchstring);
@@ -77,7 +76,9 @@ int main(int argc, char **argv) {
         char *found = memmem(buffer, bytes, searchstring, length);
 
         if (found != NULL) {
-            printf("FOUND at offset: %p", found);
+            printf("FOUND at offset: %p\n", found);
+        }
+        else {
         }
         free(searchstring);
 
