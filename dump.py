@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from subprocess import check_output
 
 
@@ -40,10 +42,18 @@ def get_map(pid):
         else:
             path = "(anonymous)"
 
-        final_list.append((start_addr, end_addr, path))
+        if not path.startswith('/system'):
+            final_list.append((start_addr, end_addr, path))
         
     return final_list
 
+
+def search_memory(pid, start, end, string):
+    """
+    Search a memory range of a PID for a given string
+
+    """
+    print check_output(['adb', 'shell', '/data/dumptool', pid, start, end, '-s', string])
 
 def dump_to_file(pid, start, end, file="memdump"):
     """
@@ -55,7 +65,7 @@ def dump_to_file(pid, start, end, file="memdump"):
 
     """
 
-    print check_output(['adb', 'shell', '/data/dump_range', pid, start, end, '/data/' + file])
+    print check_output(['adb', 'shell', '/data/dumptool', pid, start, end, '-d', '/data/' + file])
 
     print check_output(['adb', 'pull', '/data/' + file])
 
@@ -68,7 +78,8 @@ if __name__ == "__main__":
     print "Found process: " + pid
     
     for map in get_map(pid):
-        print "Dumping: " + str(map)
-        dump_to_file(pid, map[0], map[1])
+        print "Searching: " + str(map)
+        search_memory(pid, map[0], map[1], "12345678910")
+        #dump_to_file(pid, map[0], map[1])
 
 
