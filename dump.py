@@ -17,7 +17,9 @@ def get_pid(name='vendscreen.com'):
 
     for process in ps_list:
         if name in process:
-            return process.split()[0]
+            pid = process.split()[0]
+            print "Found PID: {0} of process {1}".format(pid, name)
+            return pid
 
 
 def get_map(pid):
@@ -50,10 +52,13 @@ def get_map(pid):
 
 def search_memory(pid, start, end, string):
     """
-    Search a memory range of a PID for a given string
+    Search a memory range of a PID for a given UTF-16 string
 
     """
-    print check_output(['adb', 'shell', '/data/dumptool', pid, start, end, '-s', string])
+    output = check_output(['adb', 'shell', '/data/dumptool', pid, start, end, '-s', '-u', string])
+    if len(output) != 0:
+        print "At memory range {0}-{1} in path {2}:".format(map[0], map[1], map[2])
+        print output
 
 def dump_to_file(pid, start, end, file="memdump"):
     """
@@ -75,11 +80,8 @@ def dump_to_file(pid, start, end, file="memdump"):
 if __name__ == "__main__":
     
     pid = get_pid()
-    print "Found process: " + pid
     
     for map in get_map(pid):
-        print "Searching: " + str(map)
-        search_memory(pid, map[0], map[1], "12345678910")
-        #dump_to_file(pid, map[0], map[1])
+        search_memory(pid, map[0], map[1], "STATUS")
 
 
