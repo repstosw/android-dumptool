@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 
@@ -73,9 +74,10 @@ int main(int argc, char **argv) {
         char *searchstring = malloc(strlen(argv[5]) * 2);
         int length = ascii_to_utf16(argv[5], searchstring);
 
-        int i;
-        for (i = 0; i < length; i++) {
-            printf("%x ", searchstring[i]);
+        char *found = memmem(buffer, bytes, searchstring, length);
+
+        if (found != NULL) {
+            printf("FOUND at offset: %p", found);
         }
         free(searchstring);
 
