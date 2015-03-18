@@ -13,12 +13,13 @@ int main(int argc, char **argv) {
 
     FILE *out;
     int pid;
-    long start_address, end_address;
-    long bytes;
+    size_t start_address, end_address;
+    size_t bufferlength;
 
     if (!(argc > 5)) {
-        printf("%s <pid> <start_address> <end_address> -s <string to search>\n", argv[0]); 
-        printf("searches for occurrences of string (converts to utf-16).\n\n");
+        printf("%s <pid> <start_address> <end_address> -s -[a|u] <string to search>\n", argv[0]); 
+        printf("Search for occurrences of string.\nIf -a option, search using plain ASCII\n");
+        printf("If -u option, convert ASCII string to UTF-16 (for Java strings)\n");
         printf("%s <pid> <start_address> <end_address> -d <file>\n", argv[0]);
         printf("dumps memory region to file\n");
         printf("Start/end addresses are in hex, without preceding 0x notation\n");
@@ -32,7 +33,7 @@ int main(int argc, char **argv) {
     sscanf(argv[2], "%x", (unsigned int *)&start_address);
     sscanf(argv[3], "%x", (unsigned int *)&end_address);
 
-    bytes = end_address - start_address;
+    bufferlength = end_address - start_address;
     
     // Attach to process
     ptrace(PTRACE_ATTACH, pid, NULL, NULL);
@@ -42,11 +43,11 @@ int main(int argc, char **argv) {
     char filename[64];
     sprintf(filename, "/proc/%d/mem", pid);
 
-    char *buffer = malloc(bytes);
+    char *buffer = malloc(bufferlength);
     int mem;
     mem = open(filename, O_RDONLY);
 
-    pread(mem, buffer, bytes, start_address);
+    pread(mem, buffer, bufferlength, start_address);
 
     // Detach from process
     ptrace(PTRACE_CONT, pid, NULL, NULL);
@@ -54,7 +55,7 @@ int main(int argc, char **argv) {
 
     // Determine what we're doing
     if (strcmp(argv[4], "-d") == 0) {
-        printf("Dumping %ld bytes to file %s\n", bytes, argv[5]);
+        printf("Dumping %zu bytes to file %s\n", bufferlength, argv[5]);
         // Open binary file
         out = fopen(argv[5], "wb");
 
@@ -64,23 +65,61 @@ int main(int argc, char **argv) {
             exit(1);
         }
 
-        fwrite(buffer, sizeof(char), bytes, out);
+        fwrite(buffer, sizeof(char), bufferlength, out);
         fflush(out);
         fclose(out);
     }
     else if (strcmp(argv[4], "-s") == 0) {
+        char *findstring;
+        int findlength;
 
-        char *searchstring = malloc(strlen(argv[5]) * 2);
-        int length = ascii_to_utf16(argv[5], searchstring);
-
-        char *found = memmem(buffer, bytes, searchstring, length);
-
-        if (found != NULL) {
-            printf("FOUND at offset: %p\n", found);
+        if (strcmp(argv[5], "-u") == 0) {
+            findstring = malloc(strlen(argv[6]) * 2);
+            findlength = ascii_to_utf16(argv[6], findstring);
         }
+        else if (strcmp(argv[5], "-a") == 0) {
+            findstring = malloc(strlen(argv[6]));
+            findlength = strlen(argv[6]);
+            memcpy(findstring, argv[6], findlength);
+        } 
         else {
+            printf("Need a -a or -u option!\n");
+            free(buffer);
+            exit(1);
         }
-        free(searchstring);
+
+
+        // Pointer to current position in buffer
+        char *searchstart = buffer; 
+
+        // Length of remaining buffer
+        size_t searchlength = bufferlength;
+
+        while(1) {
+            char *found = memmem(searchstart, searchlength, findstring, findlength);
+
+            // If nothing was found, exit the loop
+            if (found == NULL) {
+                break;
+            }
+
+            printf("Found string at location: %p\n", found);
+
+            // Adjust pointer to the found location plus length of search string
+            // This is where the next buffer search will start
+            searchstart = found + findlength;
+
+            // Get the offset into the original search buffer 
+            size_t foundoffset = found - buffer;
+            
+            // Adjust number of bytes to search 
+            if((bufferlength - foundoffset - findlength) <= 0) {
+                break;
+            }
+            searchlength = bufferlength - foundoffset - findlength;
+
+        }
+        free(findstring);
 
     }
 
