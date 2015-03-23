@@ -31,16 +31,25 @@ int ascii_to_utf16(char *input, char *output) {
 }
 
 
-void search_memory(char *haystack, size_t haystacklength, char *needle, size_t needlelength) {
+/**
+ * Search memory for a given string
+ * Prints the pointer location to stdout if any strings are found
+ *
+ * haystack - Pointer to buffer to search
+ * haystacklength - Length of search buffer
+ * needle - What to search for
+ * needlelength - How long needle is
+ */
+void search_memory(void *haystack, size_t haystacklength, void *needle, size_t needlelength) {
     //
     // Pointer to current position in buffer
-    char *searchstart = haystack; 
+    void *searchstart = haystack; 
 
     // Length of remaining buffer
     size_t searchlength = haystacklength;
 
     while(1) {
-        char *found = memmem(searchstart, searchlength, needle, needlelength);
+        void *found = memmem(searchstart, searchlength, needle, needlelength);
 
         // If nothing was found, exit the loop
         if (found == NULL) {
