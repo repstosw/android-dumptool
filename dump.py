@@ -50,12 +50,17 @@ def get_map(pid):
     return final_list
 
 
-def search_memory(pid, start, end, string):
+def search_memory(pid, start, end, string, ascii=True):
     """
     Search a memory range of a PID for a given UTF-16 string
 
     """
-    output = check_output(['adb', 'shell', '/data/dumptool', pid, start, end, '-s', '-u', string])
+    if ascii is True:
+        search = '-a'
+    else:
+        search = '-u'
+
+    output = check_output(['adb', 'shell', '/data/dumptool', pid, start, end, '-s', search, string])
     if len(output) != 0:
         print "At memory range {0}-{1} in path {2}:".format(map[0], map[1], map[2])
         print output
@@ -79,9 +84,15 @@ def dump_to_file(pid, start, end, file="memdump"):
 
 if __name__ == "__main__":
     
+    SEARCH_STRING = "494159336783"
     pid = get_pid()
     
+    print "Searching ASCII strings"
     for map in get_map(pid):
-        search_memory(pid, map[0], map[1], "STATUS")
+        search_memory(pid, map[0], map[1], SEARCH_STRING)
+
+    print "Searching UTF-16 strings"
+    for map in get_map(pid):
+        search_memory(pid, map[0], map[1], SEARCH_STRING, ascii=False) 
 
 

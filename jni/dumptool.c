@@ -7,7 +7,7 @@
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 
-int ascii_to_utf16(char *input, char *output);
+#include "util.h"
 
 int main(int argc, char **argv) {
 
@@ -69,12 +69,12 @@ int main(int argc, char **argv) {
         fflush(out);
         fclose(out);
     }
+
     else if (strcmp(argv[4], "-s") == 0) {
         char *findstring;
         int findlength;
 
         if (strcmp(argv[5], "-u") == 0) {
-            findstring = malloc(strlen(argv[6]) * 2);
             findlength = ascii_to_utf16(argv[6], findstring);
         }
         else if (strcmp(argv[5], "-a") == 0) {
@@ -88,37 +88,8 @@ int main(int argc, char **argv) {
             exit(1);
         }
 
+        search_memory(buffer, bufferlength, findstring, findlength);
 
-        // Pointer to current position in buffer
-        char *searchstart = buffer; 
-
-        // Length of remaining buffer
-        size_t searchlength = bufferlength;
-
-        while(1) {
-            char *found = memmem(searchstart, searchlength, findstring, findlength);
-
-            // If nothing was found, exit the loop
-            if (found == NULL) {
-                break;
-            }
-
-            printf("Found string at location: %p\n", found);
-
-            // Adjust pointer to the found location plus length of search string
-            // This is where the next buffer search will start
-            searchstart = found + findlength;
-
-            // Get the offset into the original search buffer 
-            size_t foundoffset = found - buffer;
-            
-            // Adjust number of bytes to search 
-            if((bufferlength - foundoffset - findlength) <= 0) {
-                break;
-            }
-            searchlength = bufferlength - foundoffset - findlength;
-
-        }
         free(findstring);
 
     }
@@ -127,21 +98,6 @@ int main(int argc, char **argv) {
 }
 
 
-int ascii_to_utf16(char *input, char *output) {
-
-    int length = strlen(input);
-
-    int i;
-    int outputidx = 0;
-
-    for(i = 0; i < length; i++) {
-        output[outputidx] = 0x00;
-        output[outputidx + 1] = input[i];
-        outputidx += 2;
-    }
-
-    return outputidx;
-}
 
 
 
