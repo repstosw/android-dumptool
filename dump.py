@@ -84,7 +84,7 @@ def dump_to_file(pid, start, end, file="memdump"):
 
 if __name__ == "__main__":
     
-    SEARCH_STRING = "494159336783"
+    SEARCH_STRING = "VendScreen"
     pid = get_pid()
     
     print "Searching ASCII strings"

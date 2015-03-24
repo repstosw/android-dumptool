@@ -12,21 +12,25 @@
  *
  * Returns - Length of returned string
  */
-int ascii_to_utf16(char *input, char *output) {
+int ascii_to_utf16(char *input, char **output) {
 
     int length = strlen(input);
 
     int i;
     int outputidx = 0;
 
-    output = malloc(length * 2);
+    char *new = malloc(length * 2);
+    if (new == NULL) {
+        return -1;
+    }
 
     for(i = 0; i < length; i++) {
-        output[outputidx] = 0x00;
-        output[outputidx + 1] = input[i];
+        new[outputidx] = 0x00;
+        new[outputidx + 1] = input[i];
         outputidx += 2;
     }
 
+    *output = new;
     return outputidx;
 }
 
@@ -40,7 +44,7 @@ int ascii_to_utf16(char *input, char *output) {
  * needle - What to search for
  * needlelength - How long needle is
  */
-void search_memory(void *haystack, size_t haystacklength, void *needle, size_t needlelength) {
+void search_memory(char *haystack, size_t haystacklength, char *needle, size_t needlelength) {
     //
     // Pointer to current position in buffer
     void *searchstart = haystack; 
@@ -49,7 +53,7 @@ void search_memory(void *haystack, size_t haystacklength, void *needle, size_t n
     size_t searchlength = haystacklength;
 
     while(1) {
-        void *found = memmem(searchstart, searchlength, needle, needlelength);
+        char *found = memmem(searchstart, searchlength, needle, needlelength);
 
         // If nothing was found, exit the loop
         if (found == NULL) {

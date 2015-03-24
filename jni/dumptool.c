@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     if (!(argc > 5)) {
         printf("%s <pid> <start_address> <end_address> -s -[a|u] <string to search>\n", argv[0]); 
         printf("Search for occurrences of string.\nIf -a option, search using plain ASCII\n");
-        printf("If -u option, convert ASCII string to UTF-16 (for Java strings)\n");
+        printf("If -u option, convert ASCII string to UTF-16 (for Java strings)\n\n");
         printf("%s <pid> <start_address> <end_address> -d <file>\n", argv[0]);
         printf("dumps memory region to file\n");
         printf("Start/end addresses are in hex, without preceding 0x notation\n");
@@ -71,11 +71,11 @@ int main(int argc, char **argv) {
     }
 
     else if (strcmp(argv[4], "-s") == 0) {
-        char *findstring;
+        char *findstring = NULL;
         int findlength;
 
         if (strcmp(argv[5], "-u") == 0) {
-            findlength = ascii_to_utf16(argv[6], findstring);
+            findlength = ascii_to_utf16(argv[6], &findstring);
         }
         else if (strcmp(argv[5], "-a") == 0) {
             findstring = malloc(strlen(argv[6]));
@@ -87,6 +87,8 @@ int main(int argc, char **argv) {
             free(buffer);
             exit(1);
         }
+        
+        int j;
 
         search_memory(buffer, bufferlength, findstring, findlength);
 
