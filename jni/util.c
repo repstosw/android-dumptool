@@ -78,3 +78,24 @@ void search_memory(char *haystack, size_t haystacklength, char *needle, size_t n
     }
 
 }
+
+
+/** 
+ * Print stuff
+ * If stuff can't be printed, print something else
+ * buffer - Stuff to print
+ * length - Length of stuff to print
+ */
+void print_buffer(char *buffer, unsigned int length) {
+    
+    int i;
+    for (i = 0; i < length; i++) {
+        if (buffer[i] < 32) {
+            printf("[%02X] ", buffer[i]);
+        }
+        else {
+            printf("%c ", buffer[i]);
+        }
+    }
+    printf("\n");
+}

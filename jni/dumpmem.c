@@ -10,7 +10,6 @@
 #define OMAP3_MEM_START     0x80000000
 #define OMAP3_MEM_END       0x8FFFFFFF
 
-
 int main(int argc, char **argv) {
     
     int fd;
@@ -19,11 +18,11 @@ int main(int argc, char **argv) {
     size_t page_size;
 
     if (argc < 2) {
-        printf("Usage: dumpmem <searchstring>\n");
+        printf("Usage: dumpmem <searchstring> [-u]\n");
+        printf("if -u option, convert search string to UTF-16 before searching\n");
         exit(1);
     }
 
-    printf("Searching for %s\n", argv[1]);
 
     fd = open("/dev/mem", O_RDONLY | O_SYNC);
 
@@ -48,7 +47,22 @@ int main(int argc, char **argv) {
     }
     close(fd);
 
-    search_memory(map_base, mapped_size, argv[1], strlen(argv[1])); 
+    printf("Searching starting at address: %p\n", map_base);
 
-
+    if (argc >= 2) { 
+        if (strcmp(argv[2], "-u") == 0) {
+            printf("Searching for pattern: \n");
+            char *needle;
+            size_t needlelength = ascii_to_utf16(argv[1], &needle);
+            print_buffer(needle, needlelength);
+            search_memory(map_base, mapped_size, needle, needlelength);
+        }
+        else {
+            printf("Couldn't understand \"%s\" argument. Fix it.\n", argv[2]);
+        }
+    }
+    else {
+        printf("Searching for pattern: %s\n", argv[1]);
+        search_memory(map_base, mapped_size, argv[1], strlen(argv[1])); 
+    }
 }
