@@ -74,7 +74,6 @@ def dump_to_file(pid, start, end, file="memdump"):
     Deletes the dumpfile on the device
 
     """
-t pus
     print check_output(['adb', 'shell', '/data/dumptool', pid, start, end, '-d', '/data/' + file])
 
     print check_output(['adb', 'pull', '/data/' + file])
