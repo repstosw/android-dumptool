@@ -43,8 +43,10 @@ int ascii_to_utf16(char *input, char **output) {
  * haystacklength - Length of search buffer
  * needle - What to search for
  * needlelength - How long needle is
+ *
+ * Returns: times things were found
  */
-void search_memory(char *haystack, size_t haystacklength, char *needle, size_t needlelength) {
+int search_memory(char *haystack, size_t haystacklength, char *needle, size_t needlelength) {
     //
     // Pointer to current position in buffer
     void *searchstart = haystack; 
@@ -52,6 +54,7 @@ void search_memory(char *haystack, size_t haystacklength, char *needle, size_t n
     // Length of remaining buffer
     size_t searchlength = haystacklength;
 
+    int count = 0;
     while(1) {
         char *found = memmem(searchstart, searchlength, needle, needlelength);
 
@@ -60,7 +63,8 @@ void search_memory(char *haystack, size_t haystacklength, char *needle, size_t n
             break;
         }
 
-        printf("Found string at location: %p\n", found);
+        count++;
+        printf("(%d) At location: %p\n", count, found);
 
         // Adjust pointer to the found location plus length of search string
         // This is where the next buffer search will start
@@ -76,6 +80,8 @@ void search_memory(char *haystack, size_t haystacklength, char *needle, size_t n
         searchlength = haystacklength - foundoffset - needlelength;
 
     }
+
+    return count;
 
 }
 
